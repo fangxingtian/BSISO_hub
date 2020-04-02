@@ -7,7 +7,8 @@ load "/home/users/bi913747/NCL/China_map/script/cnmask.ncl"
 load "/home/users/bi913747/NCL/SouthChinaSea/scsstation.ncl"
 begin
 ;读取850hpa纬向风、OLR、降水资料，时间是1982-2011
-it_s=19810101
+;it_s=19810101
+it_s=20010101
 it_e=20101231
 
    yrStrt  = it_s/10000
@@ -19,160 +20,167 @@ it_e=20101231
     numb = dimsizes(YYYYMMDD_olr)
     rec_s=ind(it_s.eq.YYYYMMDD_olr)            ;因为只是对时间维操作，分析范围外的数据读取只会增加计算量
     rec_e=ind(it_e.eq.YYYYMMDD_olr)
-    olr=short2flt(f_olr->TTR(rec_s:rec_e,0,{-10:40},{40:160}))
-printVarSummary(olr)
-;    delete(rec_s)
-;    delete(rec_e)
+;    olr=short2flt(f_olr->TTR(rec_s:rec_e,0,{-10:40},{40:160}))
+    olr=f_olr->TTR(rec_s:rec_e,0,{-10:40},{40:160})
+    delete(rec_s)
+    delete(rec_e)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    f_uwnd =addfile("/gws/nopw/j04/klingaman/bi913747/OBS/ERAinterim/U/ERA-Interim.daily.1979-2016.U850.nc","r")
+    time_uwnd=f_uwnd->t
+    YYYYMMDD_uwnd=cd_calendar(time_uwnd,-2)      ;这里用作多变量分析的数据可以在读取时限制到需要分析的范围，
+    numb = dimsizes(YYYYMMDD_uwnd)
+    rec_s=ind(it_s.eq.YYYYMMDD_uwnd)            ;因为只是对时间维操作，分析范围外的数据读取只会增加计算量
+    rec_e=ind(it_e.eq.YYYYMMDD_uwnd)
+;    uwnd=short2flt(f_uwnd->U(rec_s:rec_e,0,{-10:40},{40:160}))
+    uwnd=f_uwnd->U(rec_s:rec_e,0,{-10:40},{40:160})
+    delete(rec_s)
+    delete(rec_e)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    f_vwnd =addfile("/gws/nopw/j04/klingaman/bi913747/OBS/ERAinterim/V/ERA-Interim.daily.1979-2016.V850.nc","r")
+    time_vwnd=f_vwnd->t
+    YYYYMMDD_vwnd=cd_calendar(time_vwnd,-2)      ;这里用作多变量分析的数据可以在读取时限制到需要分析的范围，
+    numb = dimsizes(YYYYMMDD_vwnd)
+    rec_s=ind(it_s.eq.YYYYMMDD_vwnd)            ;因为只是对时间维操作，分析范围外的数据读取只会增加计算量
+    rec_e=ind(it_e.eq.YYYYMMDD_vwnd)
+;    vwnd=short2flt(f_vwnd->V(rec_s:rec_e,0,{-10:40},{40:160}))
+    vwnd=f_vwnd->V(rec_s:rec_e,0,{-10:40},{40:160})
+    time=f_vwnd->t(rec_s:rec_e)
+    delete(rec_s)
+    delete(rec_e)
 
-exit
-end
-;;    f_olr =addfile("/data2/home/chengyifeng/01/data/olr.day.nc","r")
-;;    time_olr=f_olr->time
-;    YYYYMMDD_olr=cd_calendar(time_olr,-2)      ;这里用作多变量分析的数据可以在读取时限制到需要分析的范围，
-;    numb = dimsizes(YYYYMMDD_olr)
-;    rec_s=ind(it_s.eq.YYYYMMDD_olr)            ;因为只是对时间维操作，分析范围外的数据读取只会增加计算量
-;    rec_e=ind(it_e.eq.YYYYMMDD_olr)
-;    olr=short2flt(f_olr->olr(rec_s:rec_e,{-10:40},{40:160}))
-;    delete(rec_s)
-;    delete(rec_e)
-;   
-;   
-;   files_uwnd=systemfunc("ls /data/ncepII/daily/pressure/uwnd.*.nc")
-;   f_uwnd= addfiles(files_uwnd, "r")
-;   ListSetType(f_uwnd, "cat") 
-;   time_uwnd=f_uwnd[:]->time
-;   YYYYMMDD_uwnd=cd_calendar(time_uwnd&time,-2)
-;   rec_s=ind(it_s.eq.YYYYMMDD_uwnd)
-;   rec_e=ind(it_e.eq.YYYYMMDD_uwnd)
-;   uwnd=short2flt(f_uwnd[:]->uwnd(rec_s:rec_e,{850},{-10:40},{40:160}))
-;   time=f_uwnd[:]->time(rec_s:rec_e)
-;   
-;   files_vwnd=systemfunc("ls /data/ncepII/daily/pressure/vwnd.*.nc")
-;   f_vwnd= addfiles(files_vwnd, "r")
-;   ListSetType(f_vwnd, "cat") 
-;   time_vwnd=f_vwnd[:]->time
-;   YYYYMMDD_vwnd=cd_calendar(time_vwnd&time,-2)
-;   rec_s=ind(it_s.eq.YYYYMMDD_vwnd)
-;   rec_e=ind(it_e.eq.YYYYMMDD_vwnd)
-;   vwnd=short2flt(f_vwnd[:]->vwnd(rec_s:rec_e,{850},{-10:40},{40:160}))
-;   time=f_vwnd[:]->time(rec_s:rec_e)  
-;   
-;   ;得到anomaly data ，先remove annual cycle,然后remove interannual variability
-;   nhar=3
-;      TIME    = cd_calendar(time, 0)             ; type float 
-;      year    = floattointeger( TIME(:,0) )          ;依次取出时间变量的年、月、日
-;      month   = floattointeger( TIME(:,1) ) 
-;      day     = floattointeger( TIME(:,2) ) 
-;      ddd     = day_of_year(year, month, day)    ; ddd中每个值代表对应日期在对应年份中的日期顺序
-;      yyyyddd = year*1000 + ddd 
-;   
-;      olr_ClmDay = clmDayTLL(olr, yyyyddd)     ; daily climatology at each grid point
-;      olr_ClmDay_sm = smthClmDayTLL(olr_ClmDay, nhar)
-;      uwnd_ClmDay = clmDayTLL(uwnd, yyyyddd)     ; daily climatology at each grid point
-;      uwnd_ClmDay_sm = smthClmDayTLL(uwnd_ClmDay, nhar)
-;      vwnd_ClmDay = clmDayTLL(vwnd, yyyyddd)     ; daily climatology at each grid point
-;      vwnd_ClmDay_sm = smthClmDayTLL(vwnd_ClmDay, nhar)
-;   
-;      olr_Anom_sm   = calcDayAnomTLL (olr, yyyyddd, olr_ClmDay_sm)
-;      uwnd_Anom_sm  = calcDayAnomTLL (uwnd, yyyyddd, uwnd_ClmDay_sm)
-;      vwnd_Anom_sm  = calcDayAnomTLL (vwnd, yyyyddd, vwnd_ClmDay_sm)
-;   
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;   
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;得到anomaly data ，先remove annual cycle,然后remove interannual variability
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   nhar=3
+      TIME    = cd_calendar(time, 0)             ; type float 
+      year    = floattointeger( TIME(:,0) )          ;依次取出时间变量的年、月、日
+      month   = floattointeger( TIME(:,1) ) 
+      day     = floattointeger( TIME(:,2) ) 
+      ddd     = day_of_year(year, month, day)    ; ddd中每个值代表对应日期在对应年份中的日期顺序
+      yyyyddd = year*1000 + ddd 
+
+      olr_ClmDay = clmDayTLL(olr, yyyyddd)     ; daily climatology at each grid point
+      olr_ClmDay_sm = smthClmDayTLL(olr_ClmDay, nhar)
+      uwnd_ClmDay = clmDayTLL(uwnd, yyyyddd)     ; daily climatology at each grid point
+      uwnd_ClmDay_sm = smthClmDayTLL(uwnd_ClmDay, nhar)
+      vwnd_ClmDay = clmDayTLL(vwnd, yyyyddd)     ; daily climatology at each grid point
+      vwnd_ClmDay_sm = smthClmDayTLL(vwnd_ClmDay, nhar)
+   
+      olr_Anom_sm   = calcDayAnomTLL (olr, yyyyddd, olr_ClmDay_sm)
+      uwnd_Anom_sm  = calcDayAnomTLL (uwnd, yyyyddd, uwnd_ClmDay_sm)
+      vwnd_Anom_sm  = calcDayAnomTLL (vwnd, yyyyddd, vwnd_ClmDay_sm)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;   
 ;   ;下面remove interannual variability(running mean of the preceeding 120 days)
 ;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;   dims_olr_anom=dimsizes(olr_Anom_sm)
-;   
-;   mt=dims_olr_anom(0)
-;   mlat=dims_olr_anom(1)
-;   mlon=dims_olr_anom(2)
-;   ave=new((/mlat,mlon/),float)
-;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;   ;;;
-;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;   olr_ano=new((/mt,mlat,mlon/),float)
-;   do i=0,118
-;      olr_ano(i,:,:)=olr_Anom_sm(i,:,:)
-;   end do
-;   do i=119,mt-1
-;      ave=0
-;      do j=0,119
-;        ave=ave+olr_Anom_sm(i-j,:,:)
-;     end do
-;     ave=ave/120.0
-;   olr_ano(i,:,:)=olr_Anom_sm(i,:,:)-ave
-;   end do
-;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;   ;;;
-;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;   uwnd_ano=new((/mt,mlat,mlon/),floaot)
-;   do i=0,118
-;      uwnd_ano(i,:,:)=uwnd_Anom_sm(i,:,:)
-;   end do
-;   do i=119,mt-1
-;      ave=0
-;      do j=0,119
-;        ave=ave+uwnd_Anom_sm(i-j,:,:)
-;     end do
-;     ave=ave/120.0
-;   uwnd_ano(i,:,:)=uwnd_Anom_sm(i,:,:)-ave
-;   end do
-;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;   
-;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;   vwnd_ano=new((/mt,mlat,mlon/),float)
-;   do i=0,118
-;      vwnd_ano(i,:,:)=vwnd_Anom_sm(i,:,:)
-;   end do
-;   do i=119,mt-1
-;      ave=0
-;      do j=0,119
-;        ave=ave+vwnd_Anom_sm(i-j,:,:)
-;     end do
-;     ave=ave/120.0
-;   vwnd_ano(i,:,:)=vwnd_Anom_sm(i,:,:)-ave
-;   end do
-;   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;   
-;   copy_VarMeta(olr, olr_ano)
-;   copy_VarMeta(uwnd,uwnd_ano)   
-;   copy_VarMeta(vwnd,vwnd_ano)
-;   
-;   ;提取夏季数据
-;   date = cd_calendar(time&time,0)                          ;date变量用来存储19820101到20111231的时间 
-;   month  = tointeger(date(:,1))
-;   nt=ind(month.ge.5.and.month.le.10)
-;   olr_sum=olr_ano(nt,:,:)
-;   uwnd_sum=uwnd_ano(nt,:,:)
-;   vwnd_sum=vwnd_ano(nt,:,:)
-;   printVarSummary(olr_sum)
-;   printVarSummary(uwnd_sum)
-;   printVarSummary(vwnd_sum)
-;   
-;   ;对夏季 太平洋区域数据 进行标准化处理，得到olr_WP_norma,uwnd_WP_norma
-;   ;先限制OLR，U850在太平洋区域，然后每个格点标准差，再求区域平均标准差，变量场除以平均标准差即可。
-;      latS_WP    = -10
-;      latN_WP    =  40
-;      lonW_WP    =  40
-;      lonE_WP    =  160
-;   
-;      olr_WP=olr_sum(:,{latS_WP:latN_WP},{lonW_WP:lonE_WP})
-;      uwnd_WP=uwnd_sum(:,{latS_WP:latN_WP},{lonW_WP:lonE_WP})        ;提取太平洋的OLR和纬向风数据
-;      vwnd_WP=vwnd_sum(:,{latS_WP:latN_WP},{lonW_WP:lonE_WP})
-;   
-;      dims=dimsizes(olr_WP)      
-;      std_field=new((/3,dims(1),dims(2)/),float)                                   ;求标准差场
-;      std_field(0,:,:)=dim_stddev_n_Wrap(olr_WP,0)
-;      std_field(1,:,:)=dim_stddev_n_Wrap(uwnd_WP,0)
-;      std_field(2,:,:)=dim_stddev_n_Wrap(vwnd_WP,0)
-;   
-;      a=dim_avg_n_Wrap(dim_avg_n_Wrap(std_field(0,:,:), 0), 0)
-;      b=dim_avg_n_Wrap(dim_avg_n_Wrap(std_field(1,:,:), 0), 0)
-;      c=dim_avg_n_Wrap(dim_avg_n_Wrap(std_field(2,:,:), 0), 0)
-;   
-;       olr_WP_norma=olr_WP/a
-;       uwnd_WP_norma=uwnd_WP/b
-;       vwnd_WP_norma=vwnd_WP/c
-;   
+  dims_olr_anom=dimsizes(olr_Anom_sm)
+   
+   mt=dims_olr_anom(0)
+   mlat=dims_olr_anom(1)
+   mlon=dims_olr_anom(2)
+   ave=new((/mlat,mlon/),float)
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   ;;;
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   olr_ano=new((/mt,mlat,mlon/),float)
+   do i=0,118
+      olr_ano(i,:,:)=olr_Anom_sm(i,:,:)
+   end do
+   do i=119,mt-1
+      ave=0
+      do j=0,119
+        ave=ave+olr_Anom_sm(i-j,:,:)
+     end do
+     ave=ave/120.0
+   olr_ano(i,:,:)=olr_Anom_sm(i,:,:)-ave
+   end do
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   ;;;
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   uwnd_ano=new((/mt,mlat,mlon/),float)
+   do i=0,118
+      uwnd_ano(i,:,:)=uwnd_Anom_sm(i,:,:)
+   end do
+   do i=119,mt-1
+      ave=0
+      do j=0,119
+        ave=ave+uwnd_Anom_sm(i-j,:,:)
+     end do
+     ave=ave/120.0
+   uwnd_ano(i,:,:)=uwnd_Anom_sm(i,:,:)-ave
+   end do
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   vwnd_ano=new((/mt,mlat,mlon/),float)
+   do i=0,118
+      vwnd_ano(i,:,:)=vwnd_Anom_sm(i,:,:)
+   end do
+   do i=119,mt-1
+      ave=0
+      do j=0,119
+        ave=ave+vwnd_Anom_sm(i-j,:,:)
+     end do
+     ave=ave/120.0
+   vwnd_ano(i,:,:)=vwnd_Anom_sm(i,:,:)-ave
+   end do
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   
+   copy_VarMeta(olr, olr_ano)
+   copy_VarMeta(uwnd,uwnd_ano)   
+   copy_VarMeta(vwnd,vwnd_ano)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;   
+   ;提取夏季数据
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   date = cd_calendar(time&t,0)                          ;date变量用来存储19820101到20111231的时间 
+   month  = tointeger(date(:,1))
+   nt=ind(month.ge.5.and.month.le.10)                       ;选择5月到10月的数据
+   olr_sum=olr_ano(nt,:,:)
+   uwnd_sum=uwnd_ano(nt,:,:)
+   vwnd_sum=vwnd_ano(nt,:,:)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   ;对夏季 太平洋区域数据 进行标准化处理，得到olr_WP_norma,uwnd_WP_norma
+   ;先限制OLR，U850在太平洋区域，然后每个格点标准差，再求区域平均标准差，变量场除以平均标准差即可。
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      latS_WP    = -10
+      latN_WP    =  40
+      lonW_WP    =  40
+      lonE_WP    =  160
+   
+      olr_WP=olr_sum(:,{latS_WP:latN_WP},{lonW_WP:lonE_WP})
+      uwnd_WP=uwnd_sum(:,{latS_WP:latN_WP},{lonW_WP:lonE_WP})        ;提取太平洋的OLR和纬向风数据
+      vwnd_WP=vwnd_sum(:,{latS_WP:latN_WP},{lonW_WP:lonE_WP})
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   
+      dims=dimsizes(olr_WP)      
+      std_field=new((/3,dims(1),dims(2)/),float)                                   ;求标准差场
+      std_field(0,:,:)=dim_stddev_n_Wrap(olr_WP,0)
+      std_field(1,:,:)=dim_stddev_n_Wrap(uwnd_WP,0)
+      std_field(2,:,:)=dim_stddev_n_Wrap(vwnd_WP,0)
+   
+      a=dim_avg_n_Wrap(dim_avg_n_Wrap(std_field(0,:,:), 0), 0)
+      b=dim_avg_n_Wrap(dim_avg_n_Wrap(std_field(1,:,:), 0), 0)
+      c=dim_avg_n_Wrap(dim_avg_n_Wrap(std_field(2,:,:), 0), 0)
+   
+print(a)
+print(b)
+print(c)
+
+       olr_WP_norma=olr_WP/a
+       uwnd_WP_norma=uwnd_WP/b
+       vwnd_WP_norma=vwnd_WP/c
+
+
+exit
+end 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;   
 ;   ;对太平洋MV-EOF分析，提取PC1和PC2
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;      neof=4
 ;   
 ;      dim_WP_norma   = dimsizes(olr_WP_norma)                                     
